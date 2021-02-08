@@ -39,7 +39,7 @@ def cargar_tablero():
         print("juego vacio")
     return tablero
 
-def verificar_fichas_v2(tablero): #Equipo ZamoraChavezCristo  Verifica que no haya mas de dos fichas iguales
+def verificar_fichas_v2(tablero): # Verifica que no haya mas de dos fichas iguales
     lista_de_todas_las_fichas = []
     for jugada in tablero:
         for ficha in jugada:
@@ -68,10 +68,10 @@ def verificar_TC(jugada): #Verifica si es una Tercia o una cuarteta
                 return False #Es una jugada de cuatro fichas pero NO es cuarteta
         return "C" #Es una cuarteta , se utiliza un codigo de letras
     return False #No es ni cuarteta ni tercia
-#equipo Cristo de zamora de las casas
+
 #AMBOS DOS
 
-#equipo Cristo de zamora de las casas
+
 def verificar_jugada_FV(jugada):#Centraliza las dos funciones anteriores
     x={}
     aux2=len(jugada) #Se almacena en aux2 el numero de fichas de la jugada
@@ -106,9 +106,8 @@ def ingresar_ficha():
         if(ficha == False):
             print("Ficha no válida")
     return ficha
-#HERIBERTO NO SABE QUE PEDo
 
-#AMBOS DOS
+
 def mover_ficha(jugada_origen,jugada_destino,ficha):
     ficha_aux = ficha #copia de ficha para mandarla a jugada destino
     if ficha_aux in jugada_origen:
@@ -161,7 +160,7 @@ def verificar_jugada_FV_copia(jugada):#Centraliza las dos funciones anteriores
         return verificar_corrida2(jugada) #verifica si realmente es una escalera
     return False
 
-#CrisTO MOMENTO
+
 def recibir_jugada(tablero,ficha):
     print("Configuración actual del tablero\n")
     num = 1
@@ -223,41 +222,73 @@ def recibir_jugada(tablero,ficha):
             return tablero
 
 def prediccion(tablero,pilaSolucion,ficha):
-    lista_de_intocables = []
+    lista_de_intocables = []    #se inicializa la lista pa que funcione :v
     copia_del_tablero = copiar_tablero(tablero)
     for jugada in copia_del_tablero:
-        posible_jugada = posible_insercion(jugada,ficha)        # Se verifica si la ficha se puede agregar en cualquiera de las jugadas
-        if posible_jugada != False:             # Si es diferente de False significa que se pudo agregar la ficha con éxito
+        posible_jugada = posible_insercion(jugada,ficha)
+        if posible_jugada != False:
             jugada = posible_jugada
             print("Si es posible agregar la ficha")
             print("Configuración final:\n")
             imprimir_tablero(copia_del_tablero)
-            pilaSolucion.append(copia_del_tablero)      # Guardar el tablero en la pilaSolucion
+            pilaSolucion.append(copia_del_tablero)
             return pilaSolucion
-    posibles_robos = posibles_robadas_inicial(ficha)    # Se obtiene una lista de las posibles fichas que puede robar para completar la jugada con la ficha del usuario
+    posibles_robos = posibles_robadas_inicial(ficha)
     for jugada in copia_del_tablero:
         for fichita in posibles_robos:     #Fichita es la ficha de la lista de los posibles robos
             if fichita in jugada:       # Si la ficha que se quiere robar está en la jugada
-                mover_ficha(jugada,copia_del_tablero[-1],fichita)       # La ficha ya ha sido robada
-                lista_de_intocables.append(fichita)         # La ficha robada se vuelve intocable
+                mover_ficha(jugada,copia_del_tablero[-1],fichita)
+                lista_de_intocables.append(fichita)
                 nuevo_tablero = copiar_tablero(copia_del_tablero)
                 pilaSolucion.append(nuevo_tablero)
-                posibles_robadas_actualizar(copia_del_tablero[-1],posibles_robos)   # Se actualiza la lista de posibles robos dado que ya se robó una
+                posibles_robadas_actualizar(copia_del_tablero[-1],posibles_robos)
 
+    lista_inserciones = []
     for jugadaActual in copia_del_tablero:
-                if verificar_jugada_FV(jugadaActual) == False:
-                    break
+        if verificar_jugada_FV(jugadaActual) == False:
+            break
+    tableroInicial = pilaSolucion[0]
+    tableroActual = []
+    verif = verificacion_chida_del_tablero(copia_del_tablero)
+    while verif != True:
+        for ficha in jugadaActual:
+            for jugada in copia_del_tablero:
+                posible_jugada = posible_insercion(jugada,ficha)
+                if posible_jugada != False: #La jugada se ingresa
+                    jugada = posible_jugada
+                    lista_inserciones.append(ficha)
+                    tablero_aux = copiar_tablero(copia_del_tablero)
+                    for y in range(len(tablero_aux)):
+                        if jugadaActual == tablero_aux[y]:
+                            ubi = tablero_aux[y]
+                        if ficha in tablero_aux[y]:
+                            tablero_aux[y].remove(ficha)
+                    nuevo_tablero = copiar_tablero(tablero_aux)
+                    pilaSolucion.append(nuevo_tablero)
 
-    while(verificacion_chida_del_tablero(copia_del_tablero) != True):
-        print(jugadaActual)
-        for ficha in copia_del_tablero:
-            if posible_insercion(jugadaActual,ficha) != False:
-                print(jugadaActual)
-        for ficha in copia_del_tablero:
-            
-        print("Tablero")
-        print(copia_del_tablero)
-        return
+        if lista_inserciones == jugadaActual:
+            jugadaActual_aux = jugadaActual[:]
+            jugadaActual.clear()
+        if len(jugadaActual) == 0:
+            copia_del_tablero.remove(jugadaActual)
+            if verificacion_chida_del_tablero(copia_del_tablero) == True:
+                break
+        if len(jugadaActual) == 1:
+            posibles_robos =  posibles_robadas_inicial(jugadaActual[0])
+        else:       # La jugada es de dos fichas
+            posibles_robos = []
+            posibles_robadas_actualizar(jugadaActual,posibles_robos)
+        for jugada in copia_del_tablero:
+            for fichita in posibles_robos:
+                if fichita in jugada and fichita not in lista_de_intocables:
+                    mover_ficha(jugada,jugadaActual,fichita)
+                    lista_de_intocables.append(fichita)
+                    nuevo_tablero = copiar_tablero(copia_del_tablero)
+                    pilaSolucion.append(nuevo_tablero)
+        for jugadaActual in copia_del_tablero:
+            if verificar_jugada_FV(jugadaActual) == False:
+                break
+        verif = verificacion_chida_del_tablero(copia_del_tablero)
 
     print("Si es posible agregar la ficha")
     print("Configuración final:")
@@ -384,10 +415,10 @@ def imprimir_tablero(tablero):
         contador +=1
         print("jugada "+str(contador)+":",end="")
         for ficha in jugada:
-            print (ficha,end="") #ES DUENDE Y NIGGA
+            print (ficha,end="")
     return
 
-#Esto sí se queda
+
 def menu():
     ops = ['Cargar Tablero', 'Agregar ficha', 'Predicción de una jugada', 'Secuencia de movimientos','Salir']
     while True:
